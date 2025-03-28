@@ -1,0 +1,8 @@
+start_gunicorn:
+    uv run gunicorn --config gunicorn.conf.py 'hello:create_app()'
+
+start_flask:
+    FLASK_APP=hello.py uv run flask --debug run
+
+start:
+    uv run -- hello.py

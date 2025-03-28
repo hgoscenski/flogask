@@ -1,0 +1,14 @@
+[project]
+name = "example"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "flask>=3.1.0",
+    "flogask",
+    "gunicorn>=23.0.0",
+]
+
+[tool.uv.sources]
+flogask = { path = "../flogask" }

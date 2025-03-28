@@ -1,0 +1,20 @@
+[project]
+name = "flogask"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Harrison Goscenski", email = "hgoscenski@vailsys.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "flask>=3.1.0",
+    "structlog>=25.2.0",
+]
+
+[project.scripts]
+flogask = "flogask:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
