@@ -9,7 +9,7 @@ import uuid
 
 import structlog
 
-from flogask.src.flogask.utils import timestamper
+from flogask.utils import timestamper
 
 def pre_logging_setup():
     logging.basicConfig(
