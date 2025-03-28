@@ -1,3 +1,0 @@
-flask>=3.1.0
-flogask
-gunicorn>=23.0.0
