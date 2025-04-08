@@ -1,7 +1,7 @@
 import os
 
 from flask import Flask
-from flogask.log import setup_logging, pre_logging_setup
+from flogask.log import setup_flask_logging, pre_logging_setup
 
 pre_logging_setup()
 
@@ -9,7 +9,7 @@ def create_app():
     app = Flask(__name__)
     app.config["DEBUG"] = os.environ.get("FLASK_DEBUG", False)
     
-    logger = setup_logging(app)
+    logger = setup_flask_logging(app)
 
     @app.route('/')
     def index():

@@ -9,7 +9,7 @@ import uuid
 
 import structlog
 
-from flogask.utils import timestamper
+from flogask.utils import default_processors
 
 def pre_logging_setup():
     logging.basicConfig(
@@ -20,37 +20,28 @@ def pre_logging_setup():
     logging.getLogger('gunicorn').disabled = True
     logging.getLogger("wsgi").disabled = True
 
-def setup_logging(app: app):
+def setup_logging(consoleLogs: bool = False):
     logger = structlog.get_logger()
 
-    app.logger.removeHandler(default_handler)
+    processors = default_processors
 
-    processors = [
-            structlog.contextvars.merge_contextvars,  # <--!!!
-            structlog.stdlib.add_log_level,
-            structlog.stdlib.PositionalArgumentsFormatter(),
-            structlog.processors.CallsiteParameterAdder(
-                [
-                    structlog.processors.CallsiteParameter.FILENAME,
-                    structlog.processors.CallsiteParameter.PATHNAME,
-                    structlog.processors.CallsiteParameter.FUNC_NAME,
-                    structlog.processors.CallsiteParameter.LINENO
-                ],
-            ),
-            timestamper,
-            structlog.processors.StackInfoRenderer(),
-            structlog.processors.format_exc_info,
-        ]
-
-    if app.config['DEBUG']:
+    if consoleLogs:
         processors.append(structlog.dev.ConsoleRenderer(colors=True))
     else:
         processors.append(structlog.processors.JSONRenderer())
+
 
     structlog.configure(
         processors=processors,
         logger_factory=structlog.stdlib.LoggerFactory(),
     )
+
+    return logger
+
+def setup_flask_logging(app: app):
+    logger = setup_logging(app.config['DEBUG'])
+
+    app.logger.removeHandler(default_handler)
 
     @app.before_request
     def logger_setup():
