@@ -21,6 +21,8 @@ def pre_logging_setup():
     logging.getLogger("wsgi").disabled = True
 
 def setup_logging(consoleLogs: bool = False):
+    root_logger = logging.getLogger()
+
     logger = structlog.get_logger()
 
     processors = default_processors
@@ -36,6 +38,9 @@ def setup_logging(consoleLogs: bool = False):
         logger_factory=structlog.stdlib.LoggerFactory(),
     )
 
+    handler = logging.StreamHandler()
+    root_logger.addHandler(handler)
+    
     return logger
 
 def setup_flask_logging(app: app):

@@ -95,6 +95,9 @@ gunicorn_logconfig_dict = {
         "gunicorn": {
             "level": "INFO"
         },
+        "alembic": {
+            "level": "INFO"
+        },
     },
     "handlers": {
         "root": {
