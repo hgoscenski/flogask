@@ -4,6 +4,7 @@ import json
 import structlog
 
 from flogask.log import timestamper
+from flogask.utils import pre_chain
 
 gunicorn_access_log_format = '%({x-forwarded-for}i)s %(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s" "%({x-request-id}o)s"'
 
@@ -72,16 +73,6 @@ def combined_logformat(logger, name, event_dict):
     return event_dict
 
 # --- Structlog logging initialisation code
-pre_chain = [
-    # Add the log level and a timestamp to the event_dict if the log entry
-    # is not from structlog.
-    structlog.stdlib.add_log_level,
-    structlog.stdlib.add_logger_name,
-    structlog.processors.format_exc_info,
-    timestamper,
-    combined_logformat # This does the magic!
-]
-
 gunicorn_logconfig_dict = {
     "version": 1,
     "disable_existing_loggers": True,
@@ -90,7 +81,7 @@ gunicorn_logconfig_dict = {
         "json_formatter": {
             "()": structlog.stdlib.ProcessorFormatter,
             "processor": structlog.processors.JSONRenderer(),
-            "foreign_pre_chain": pre_chain,
+            "foreign_pre_chain": [pre_chain] + [combined_logformat],
         }
     },
     "root": {

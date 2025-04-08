@@ -18,3 +18,10 @@ default_processors = [
     structlog.processors.StackInfoRenderer(),
     structlog.processors.format_exc_info,
 ]
+
+pre_chain = [
+    structlog.stdlib.add_log_level,
+    structlog.stdlib.add_logger_name,
+    structlog.processors.format_exc_info,
+    timestamper,
+]
