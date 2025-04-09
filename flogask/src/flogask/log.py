@@ -3,17 +3,17 @@ import sys
 import json
 import re
 
-from flask import app, request, g
+from flask import app, request, g, Response
 from flask.logging import default_handler
 import uuid
 
 import structlog
 
-from flogask.utils import default_processors
+from flogask.utils import default_processors, timestamper, pre_chain
 
 def pre_logging_setup():
     logging.basicConfig(
-        format="%(message)s", stream=sys.stdout, level=logging.DEBUG
+        format="%(message)s", stream=sys.stdout, level=logging.INFO
     )
 
     logging.getLogger('werkzeug').disabled = True
@@ -32,6 +32,10 @@ def setup_logging(consoleLogs: bool = False):
     else:
         processors.append(structlog.processors.JSONRenderer())
 
+    formatter = structlog.stdlib.ProcessorFormatter(
+        processor=structlog.dev.ConsoleRenderer(colors=True),
+        foreign_pre_chain=pre_chain
+    )
 
     structlog.configure(
         processors=processors,
@@ -39,12 +43,18 @@ def setup_logging(consoleLogs: bool = False):
     )
 
     handler = logging.StreamHandler()
+    # Use OUR `ProcessorFormatter` to format all `logging` entries.
+    handler.setFormatter(formatter)
+
+    for h in root_logger.handlers:
+        root_logger.removeHandler(h)
     root_logger.addHandler(handler)
+    root_logger.setLevel(logging.INFO)
     
     return logger
 
-def setup_flask_logging(app: app):
-    logger = setup_logging(app.config['DEBUG'])
+def setup_flask_logging(app: app, consoleLogs: bool = False):
+    logger = setup_logging(app.config['DEBUG'] or consoleLogs)
 
     app.logger.removeHandler(default_handler)
 
@@ -66,7 +76,8 @@ def setup_flask_logging(app: app):
         logger.info("received request")
 
     @app.after_request
-    def add_request_id(response):
+    def add_request_id(response: Response):
+        logger.info("completed request", status_code=response.status_code)
         response.headers['x-request-id'] = g.request_id
         return response
 
